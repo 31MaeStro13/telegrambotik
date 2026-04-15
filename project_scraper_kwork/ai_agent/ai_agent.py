@@ -17,8 +17,8 @@ embedder = SentenceTransformerEmbedder(id="all-MiniLM-L6-v2")
 
 
 vector_db = ChromaDb(
-    collection_name="kwork_projects",
-    path="./chroma_db",  # путь к твоей ChromaDB
+    name="kwork_projects",      # ← name, а не collection_name
+    path="./chroma_db",
     embedder=embedder
 )
 

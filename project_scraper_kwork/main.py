@@ -20,11 +20,33 @@ from handlers.callbacks.profile import profile_callback_router
 from handlers.callbacks.more import more_router
 from handlers.recommend import recommend_router
 
+# Для обхода блокировки
 from aiogram.client.session.aiohttp import AiohttpSession
-import aiohttp
+
+
+# Импортируем планировщик парсеров
+from service.parcer_planer import start_scheduler, run_all_parsers
+
+
 
 logger = logging.getLogger(__name__)
 
+async def on_startup():
+    """Действия при запуске бота"""
+    logger.info("🚀 Бот запускается...")
+
+    # Запускаем планировщик парсеров (каждый час)
+    start_scheduler()
+
+    # Опционально: запустить парсинг сразу при старте
+    # asyncio.create_task(run_all_parsers())
+
+
+async def on_shutdown():
+    """Действия при остановке бота"""
+    logger.info("🛑 Бот останавливается...")
+    from service.parcer_planer import stop_scheduler
+    stop_scheduler()
 
 async def main():
 
@@ -45,10 +67,13 @@ async def main():
     # Создаём хранилище для FSM
     storage = RedisStorage(redis_client)
 
+    session = AiohttpSession(proxy='socks5://pl.gptru.pro.mtproto.ru:443')
+
 
 
     bot = Bot(
         token=config.bot.token,
+        session=session,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 

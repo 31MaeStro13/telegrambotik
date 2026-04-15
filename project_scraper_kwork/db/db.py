@@ -71,31 +71,30 @@ def check_if_exists(conn, project_id):
             pass
 
 # Вставка данных с проверкой на дубликаты
-def insert_into_db(name, price, description, link, project_id):
+def insert_into_db(name, price, description, link, project_id, source='kwork', external_id=None):
     conn = connect_db()
     if not conn:
-        return
+        return False
 
     try:
         if check_if_exists(conn, project_id):
-            print(f"Дубликат найден: {name}, {project_id}. Запись не добавлена.")
-            return
+            print(f"⏭️ Дубликат: {project_id} уже есть в БД")
+            return False
 
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO kwork_projects (name, price, description, link, project_id)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', (name, price, description, link, project_id))
+            INSERT INTO kwork_projects (name, price, description, link, project_id, source, external_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ''', (name, price, description, link, project_id, source, external_id))
         conn.commit()
-        print(f"Запись добавлена: {name}, {price}, {link}")
-    except mysql.connector.Error as e:
+        print(f"✅ Добавлен: {name[:30]}...")
+        return True
+    except Exception as e:
         print(f"Ошибка при вставке данных: {e}")
+        return False
     finally:
         try:
             cursor.close()
-        except:
-            pass
-        try:
             conn.close()
         except:
             pass
